@@ -15,12 +15,14 @@
 # string bobber:         Can be used to supply a custom bobber.
 #                        The less information the bobber uses from the other field,
 #                        the better the result will be.
+# bool   show (false):   If set to true, mark those frames that were recalculated.
 
-function JIVTC(clip c, int pattern, int "thr", bool "draft", clip "ivtced", string "bobber")
+function JIVTC(clip c, int pattern, int "thr", bool "draft", clip "ivtced", string "bobber", bool "show")
 {
   pattern = pattern % 5
   thr     = Default(thr, 10)
   draft   = Default(draft, false)
+  show    = Default(show, false)
 
   defivtc = DoubleWeave(c)
   defivtc = pattern==0 ? SelectEvery(defivtc, 10,0,3,6,8) : \
@@ -50,7 +52,7 @@ function JIVTC(clip c, int pattern, int "thr", bool "draft", clip "ivtced", stri
   # abs(diffprev - diffnext) < thr ? false : true
   thrmask   = mt_lutxy(diffprev, diffnext, "x y - abs " + String(thr) + " < 0 255 ?", U=1, V=1)
   # restore original IVTCed clip according to mask
-  recalc    = mt_merge(ivtced, prerecalc, StackVertical(thrmask, thrmask), luma=true)
+  recalc    = mt_merge(ivtced, show ? prerecalc.Subtitle("Recalculated") : prerecalc, StackVertical(thrmask, thrmask), luma=true)
 
   inter = Interleave(ivtced, recalc)
   final = pattern==0 ? SelectEvery(inter, 8, 0, 3, 4, 6) : \
